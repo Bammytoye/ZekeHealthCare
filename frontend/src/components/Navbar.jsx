@@ -1,8 +1,13 @@
-import React from 'react'
+import React, { useState } from 'react'
 import assets from '../assets/assets_frontend/assets'
-import { NavLink } from 'react-router-dom'
+import { NavLink, useNavigate } from 'react-router-dom'
 
 const Navbar = () => {
+    const navigate = useNavigate()
+
+    const [showMenu, setShowMenu] = useState(false);
+    const [token, setToken] = useState(true)
+
     return (
         <div className='flex items-center justify-between py-4 mb-5 text-sm border-b border-b-gray-400'>
             <img
@@ -40,9 +45,24 @@ const Navbar = () => {
             </ul>
 
             <div className='flex items-center gap-4'>
-                <button className='bg-primary text-white px-4 py-3 rounded-full text-sm font-medium hidden md:block'>
+                {
+                    token ? 
+                    <div className='flex items-center gap-2 cursor-pointer group relative'>
+                        <img className='w-8 rounded-full' src={assets.profile_pic} alt="Profile Pic" />
+                        <img className='w-2.5' src={assets.dropdown_icon} alt='Drop Down Icon' />
+
+                        <div className='absolute top-0 hidden right-0 pt-14 text-base font-medium text-gray-600 group-hover:block z-20'>
+                            <div className='min-w-48 bg-stone-100 rounded flex flex-col gap-4 p-4'>
+                                <p onClick={()=> navigate('my-profile')} className='hover:text-black cursor-pointer'>My Profile</p>
+                                <p onClick={()=> navigate('my-appointment')} className='hover:text-black cursor-pointer'>My Appointment</p>
+                                <p onClick={()=> setToken(false)} className='hover:text-black cursor-pointer'>Log Out</p>
+                            </div>
+                        </div>
+                    </div> :
+                <button onClick={()=> navigate('/login')} className='bg-primary text-white px-4 py-3 rounded-full text-sm font-medium hidden md:block'>
                     Create Account
                 </button>
+                }
             </div>
         </div>
     )
