@@ -38,7 +38,7 @@ import Neurologist from './Neurologist.svg'
 import Pediatricians from './Pediatricians.svg'
 
 
-export const assets = {
+export default {
     appointment_img,
     header_img,
     group_profiles,
