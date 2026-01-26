@@ -36,8 +36,8 @@ const Doctors = () => {
         <div>
             <p className='text-gray-600'>Browse through the doctors specialist</p>
 
-            <div className='flex flex-col sm:flex-row items-start gap-5 mt-5'>
-                <div className='flex flex-col gap-4 text-sm text-gray-600'>
+            <div className='flex flex-col sm:flex-row items-start gap-5 mt-1'>
+                <div className='flex flex-col gap-4 text-sm text-gray-600 mt-3'>
                     {specialities.map((item) => (
                         <p
                             key={item}
@@ -55,7 +55,13 @@ const Doctors = () => {
                 </div>
 
 
-                <div className='w-full grid grid-cols-auto gap-4 pt-5 gap-y-6 px-3 sm:px-0'>
+                <div className='w-full grid grid-cols-auto gap-4 pt-2 gap-y-6 px-3 sm:px-0'>
+                    {filterDoctor.length === 0 && (
+                        <p className="text-gray-500 text-3xl col-span-full flex justify-center mt-32 items-center text-center">
+                            No doctors found for this speciality.
+                        </p>
+                    )}
+                    
                     {
                         filterDoctor.map((item, index) => (
                             <div
