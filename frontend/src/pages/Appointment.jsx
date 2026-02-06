@@ -6,7 +6,7 @@ import RelatedDoctor from '../components/RelatedDoctor'
 
 const Appointment = () => {
     const { docId } = useParams()
-    const { doctors, currencySymbol } = useContext(AppContent)
+    const { doctorsData, currencySymbol } = useContext(AppContent)
 
     const daysOfWeek = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT']
 
@@ -17,12 +17,12 @@ const Appointment = () => {
 
     /* ------------------ FETCH DOCTOR ------------------ */
     useEffect(() => {
-        if (!doctors.length) return
+        if (!doctorsData.length) return
 
-        const doctor = doctors.find(doc => doc._id.toString() === docId)
+        const doctor = doctorsData.find(doc => doc._id.toString() === docId)
         setDocInfo(doctor)
         console.log('Doctor found:', doctor)
-    }, [doctors, docId])
+    }, [doctorsData, docId])
 
     /* ------------------ GENERATE SLOTS ------------------ */
     const getAvailableSlots = () => {
@@ -125,22 +125,29 @@ const Appointment = () => {
                 {/* Days */}
                 <div className="flex gap-2 mt-2 overflow-x-scroll">
                     {docSlot.length > 0 &&
-                        docSlot.map((item, index) => (
-                            <div
-                                key={index}
-                                onClick={() => {
-                                    setSlotIndex(index)
-                                    setSlotTime('')
-                                }}
-                                className={`text-center py-1 px-5 min-w-16 rounded-xl cursor-pointer
-                                ${slotIndex === index
-                                    ? 'bg-primary text-white'
-                                    : 'border border-gray-200 text-gray-600'}`}
-                            >
-                                <p>{daysOfWeek[item[0].datetime.getDay()]}</p>
-                                <p>{item[0].datetime.getDate()}</p>
-                            </div>
-                        ))}
+                        docSlot.map((item, index) => {
+
+                            if (!item || item.length === 0) return null
+
+                            return (
+                                <div
+                                    key={index}
+                                    onClick={() => {
+                                        setSlotIndex(index)
+                                        setSlotTime('')
+                                    }}
+                                    className={`text-center py-1 px-5 min-w-16 rounded-xl cursor-pointer
+                                        ${slotIndex === index
+                                            ? 'bg-primary text-white'
+                                            : 'border border-gray-200 text-gray-600'}`}
+                                >
+                                    <p>{daysOfWeek[item[0].datetime.getDay()]}</p>
+                                    <p>{item[0].datetime.getDate()}</p>
+                                </div>
+                            )
+                        })
+                    }
+
                 </div>
 
                 {/* Times */}
@@ -152,8 +159,8 @@ const Appointment = () => {
                                 onClick={() => setSlotTime(item.time)}
                                 className={`px-5 py-2 text-sm rounded-full cursor-pointer
                                 ${slotTime === item.time
-                                    ? 'bg-primary text-white'
-                                    : 'border border-gray-300 text-gray-600'}`}
+                                        ? 'bg-primary text-white'
+                                        : 'border border-gray-300 text-gray-600'}`}
                             >
                                 {item.time.toLowerCase()}
                             </p>
@@ -165,7 +172,7 @@ const Appointment = () => {
                 </button>
             </div>
 
-            <RelatedDoctor docId={docId} speciality={docInfo.speciality}/>
+            <RelatedDoctor docId={docId} speciality={docInfo.speciality} />
         </div>
     )
 }

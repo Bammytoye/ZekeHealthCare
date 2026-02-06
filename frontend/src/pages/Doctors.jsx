@@ -8,19 +8,19 @@ const Doctors = () => {
     const [showFilter, setShowFilter] = useState(false)
     const navigate = useNavigate()
 
-    const { doctors } = useContext(AppContent)
+    const { doctorsData } = useContext(AppContent)
 
     const applyFilter = () => {
         if (speciality) {
-            setFilterDoctor(doctors.filter(doc => doc.speciality === speciality))
+            setFilterDoctor(doctorsData.filter(doc => doc.speciality === speciality))
         } else {
-            setFilterDoctor(doctors)
+            setFilterDoctor(doctorsData)
         }
     }
 
     useEffect(() => {
         applyFilter()
-    }, [doctors, speciality])
+    }, [doctorsData, speciality])
 
 
     const specialities = [

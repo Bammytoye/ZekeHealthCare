@@ -3,19 +3,19 @@ import { AppContent } from '../context/AppContent'
 import { useNavigate } from 'react-router-dom'
 
 const RelatedDoctor = ({ docId, speciality }) => {
-    const { doctors } = useContext(AppContent)
+    const { doctorsData } = useContext(AppContent)
     const [relatedDoctors, setRelatedDoctors] = useState([])
     const navigate = useNavigate()
 
     useEffect(() => {
-        if (!doctors.length || !speciality) return
+        if (!doctorsData.length || !speciality) return
 
-        const filteredDoctors = doctors.filter(
+        const filteredDoctors = doctorsData.filter(
             doc => doc.speciality === speciality && doc._id !== docId
         )
 
         setRelatedDoctors(filteredDoctors)
-    }, [doctors, speciality, docId])
+    }, [doctorsData, speciality, docId])
 
     if (!relatedDoctors.length) return null
 
