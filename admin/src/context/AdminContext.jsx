@@ -12,15 +12,16 @@ const AdminContextProvider = (props) => {
 
     const getAllDoctors = async () => {
         try {
-            const {data} = await axios.post(`${backendUrl}/admin/all-doctors`, { headers: { aToken } });
+            const {data} = await axios.post(backendUrl + '/admin/all-doctors', {}, {headers: {aToken}});
 
             if (data.success){
                 setDoctors(data.doctors)
+                // console.log(data.doctors)
             } else {
                 toast.error(data.message)
             }
         } catch (error) {
-            console.error('Error fetching doctors:', error);
+            console.error('Error fetching doctors:', error.message);
         }
     }
 
