@@ -25,9 +25,23 @@ const AdminContextProvider = (props) => {
         }
     }
 
+    const changeAvailability = async (doctorId) => {
+        try {
+            const {data} = await axios.post(backendUrl + '/admin/change-availability', {doctorId}, {headers: {aToken}});
+
+            if (data.success){
+                toast.success(data.message)
+                getAllDoctors()
+            } else {
+                toast.error(data.message)
+            }
+        } catch (error) {
+            toast.error(error.message)
+        }
+    }
 
     const value = {
-        aToken, setAToken, backendUrl, doctors, getAllDoctors, 
+        aToken, setAToken, backendUrl, doctors, getAllDoctors, changeAvailability
     }; // You can add any global state or functions here
 
 
