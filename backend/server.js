@@ -5,6 +5,7 @@ import connectDB from './config/MongoDB.js';
 import configureCloudinary from './config/couldinary.js';
 import adminRouter from './routes/adminRoute.js';
 import doctorRouter from './routes/doctorRoute.js';
+import userRouter from './routes/userRoute.js';
 
 
 const app = express();
@@ -19,6 +20,7 @@ app.use(express.json());
 //api endpoint
 app.use('/api/admin/', adminRouter) //localhost:8000/api/admin/add-doctor
 app.use('/api/doctors/', doctorRouter) //localhost:8000/api/doctors/list
+app.use('/api/user/', userRouter)
 
 // test route
 app.get('/', (req, res) => {

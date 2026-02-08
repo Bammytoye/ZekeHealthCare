@@ -9,6 +9,7 @@ const AppContentProvider = (props) => {
     const currencySymbol = '₦'
     const backendURL = import.meta.env.VITE_BACKEND_URL
     const [doctorsData, setDoctorsData] = useState([])
+    const [token, setToken] = useState('')
 
     const getDoctorsData = async () => {
         try {
@@ -30,7 +31,7 @@ const AppContentProvider = (props) => {
 
     const value = {
         currencySymbol,
-        doctorsData
+        doctorsData, token, setToken, backendURL
     }
 
     return (
