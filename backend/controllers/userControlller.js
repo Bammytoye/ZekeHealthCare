@@ -21,7 +21,7 @@ const registerUser = async (req, res) => {
         }
 
         const salt = await bcrypt.genSalt(10)
-        const hashedPassword = await bcrypt.hash(password.salt)
+        const hashedPassword = await bcrypt.hash(password, salt)
 
         const userData = {
             name,
@@ -32,7 +32,7 @@ const registerUser = async (req, res) => {
         const newUser = new userModel(userData)
         const user = await newUser.save()
 
-        const token = jwt.sign({id: user_id}, process.env.JWT_SECRET)
+        const token = jwt.sign({id: user._id}, process.env.JWT_SECRET)
         res.json({success: true, token})
 
     } catch (error) {
@@ -43,24 +43,38 @@ const registerUser = async (req, res) => {
 
 const loginUser = async (req, res) => {
     try {
-        const {email, password} =req.body
-        const user = await userModel.findOne({email})
+        const { email, password } = req.body
+        const user = await userModel.findOne({ email })
 
         if (!user) {
-            return res.json({success:false, message: 'User does not exist'})
+            return res.json({ success: false, message: 'User does not exist' })
         }
 
         const isMatchPassword = await bcrypt.compare(password, user.password)
 
         if (!isMatchPassword) {
-            const token = jwt.sign({id: user._id}, process.env.JWT_SECRET)
-            res.json({success: false, message: 'Invalid credentials'}) 
+            return res.json({ success: false, message: 'Invalid credentials' })
         }
+
+        const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET)
+
+        res.json({ success: true, token })
+
     } catch (error) {
         console.log(error)
-        res.json({success: false, message: error.message})
+        res.json({ success: false, message: error.message })
     }
 }
 
+//api to get user profile data
+const getProfile = async (req, res) => {
+    try {
+        const user = await userModel.findById(req.user.id)
+        res.json({ success: true, user })
+    } catch (error) {
+        console.log(error)
+        res.json({ success: false, message: error.message })
+    }
+}
 
 export {registerUser, loginUser}

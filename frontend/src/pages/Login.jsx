@@ -1,11 +1,13 @@
-import React, { useContext, useState } from 'react'
+import React, { useContext, useEffect, useState } from 'react'
 import { AppContent } from '../context/AppContent'
 import axios from 'axios'
 import { toast } from 'react-toastify'
+import { useNavigate } from 'react-router-dom'
 
 const Login = () => {
     const [state, setState] = useState('Sign Up')
-    const { token, setToken, backendUrl } = useContext(AppContent)
+    const { token, setToken, backendURL } = useContext(AppContent)
+    const navigate = useNavigate()
 
     const [name, setName] = useState('')
     const [email, setEmail] = useState('')
@@ -16,7 +18,7 @@ const Login = () => {
 
         try {
             if (state === 'Sign Up') {
-                const {data} = await axios.post(backendUrl + '/user/register', {name, password, email})
+                const {data} = await axios.post(`${backendURL}/user/register`, {name, password, email})
                 if (data.success) {
                     localStorage.setItem('token', data.token)
                     setToken(data.token)
@@ -24,7 +26,7 @@ const Login = () => {
                     toast.error(data.message)
                 }
             } else {
-                const {data} = await axios.post(backendUrl + '/user/login', {password, email})
+                const {data} = await axios.post(`${backendURL}/user/login`, {password, email})
                 if (data.success) {
                     localStorage.setItem('token', data.token)
                     setToken(data.token)
@@ -36,6 +38,12 @@ const Login = () => {
             toast.error(error.message)
         }
     }
+
+    useEffect(() => {
+        if (token) {
+            navigate('/')
+        }
+    }, [token])
 
     return (
         <form onSubmit={handleSubmit} className='min-h-[80vh] flex items-center'>
@@ -55,7 +63,6 @@ const Login = () => {
                         />
                     </div>
                 }
-
 
                 <div className='w-full'>
                     <p>Email</p>

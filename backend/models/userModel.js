@@ -26,37 +26,14 @@ const userSchema = new mongoose.Schema({
     gender: {
         type: String,
         default: 'Not Selected',
-        required: true
     },
     dob: {
         type: String,
         default: 'Not Selected',
-        required: true
     },
     phone: {
         type: String,
         default: '00000000000',
-        required: true
-    },
-    available: {
-        type: Boolean,
-        required: true
-    },
-    fees: {
-        type: String,
-        required: true
-    },
-    address: {
-        type: Object,
-        required: true
-    },
-    date: {
-        type: Number,
-        required: true
-    },
-    slots_booked: {
-        type: Object,
-        default: {}
     },
 }, { timestamps: true, minimize: false });
 

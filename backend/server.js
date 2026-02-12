@@ -20,7 +20,7 @@ app.use(express.json());
 //api endpoint
 app.use('/api/admin/', adminRouter) //localhost:8000/api/admin/add-doctor
 app.use('/api/doctors/', doctorRouter) //localhost:8000/api/doctors/list
-app.use('/api/user/', userRouter)
+app.use('/api/user/', userRouter) //localhost:8000/api/user/
 
 // test route
 app.get('/', (req, res) => {

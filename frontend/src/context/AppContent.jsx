@@ -9,11 +9,11 @@ const AppContentProvider = (props) => {
     const currencySymbol = '₦'
     const backendURL = import.meta.env.VITE_BACKEND_URL
     const [doctorsData, setDoctorsData] = useState([])
-    const [token, setToken] = useState('')
+    const [token, setToken] = useState(localStorage.getItem('token')?localStorage.getItem('token'):false)
 
     const getDoctorsData = async () => {
         try {
-            const {data} = await axios.get(backendURL + 'doctors/list')
+            const {data} = await axios.get(backendURL + '/doctors/list')
             if (data.success) { 
                 setDoctorsData(data.doctorsData)
             } else {
