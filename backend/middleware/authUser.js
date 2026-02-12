@@ -1,21 +1,23 @@
 import jwt from 'jsonwebtoken';
 
-const authAdmin = async(req, res, next) => {
+const authUser = async (req, res, next) => {
     try {
-        const {atoken} = req.headers
-        if (!atoken) {
-            return res.json({success:false, message: 'Not authorized login again'})
-        } 
-        const token_decode = jwt.verify(atoken, process.env.JWT_SECRET)
+        const { token } = req.headers
 
-        if (token_decode !== process.env.ADMIN_EMAIL + process.env.ADMIN_PASSWORD) {
-            return res.json({success:false, message: 'Not authorized login again'}) 
+        if (!token) {
+            return res.json({ success: false, message: 'Not authorized login again' })
         }
+
+        const token_decode = jwt.verify(token, process.env.JWT_SECRET)
+
+        req.user = { id: token_decode.id }
+
         next()
     } catch (error) {
         console.log(error)
-        res.json({success: false, message: error.message})
+        res.json({ success: false, message: error.message })
     }
 }
 
-export default authAdmin
+
+export default authUser
