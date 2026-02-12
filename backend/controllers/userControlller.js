@@ -27,7 +27,15 @@ const registerUser = async (req, res) => {
         const userData = {
             name,
             email,
-            password: hashedPassword
+            password: hashedPassword,
+            phone: '',
+            gender: '',
+            dob: '',
+            image: '',
+            address: {
+                line1: '',
+                line2: ''
+            }
         }
 
         const newUser = new userModel(userData)
@@ -84,28 +92,26 @@ const getProfile = async (req, res) => {
 
 const updateUserProfile = async (req, res) => {
     try {
-        const { name, phone, address, dob, gender } = req.body
         const userId = req.user.id
         const imageFile = req.file
 
-        if (!name || !phone || !gender || !dob) {
-            return res.json({ success: false, message: 'Data Missing' })
-        }
+        // parse FormData fields
+        const name = req.body.name || ''
+        const phone = req.body.phone || ''
+        const dob = req.body.dob || ''
+        const gender = req.body.gender || ''
+        const address = req.body.address ? JSON.parse(req.body.address) : { line1: '', line2: '' }
 
-        await userModel.findByIdAndUpdate(userId, {
-            name,
-            phone,
-            address: JSON.parse(address),
-            dob,
-            gender
-        })
+        // optional: allow missing fields instead of failing
+        const updateData = { name, phone, dob, gender, address }
 
+        // if image uploaded
         if (imageFile) {
             const imageUpload = await cloudinary.uploader.upload(imageFile.path, { resource_type: 'image' })
-            const imageURL = imageUpload.secure_url
-
-            await userModel.findByIdAndUpdate(userId, { image: imageURL })
+            updateData.image = imageUpload.secure_url
         }
+
+        await userModel.findByIdAndUpdate(userId, updateData, { new: true })
 
         res.json({ success: true, message: "Profile Updated" })
 
@@ -114,6 +120,7 @@ const updateUserProfile = async (req, res) => {
         res.json({ success: false, message: error.message })
     }
 }
+
 
 
 export { registerUser, loginUser, getProfile, updateUserProfile }
