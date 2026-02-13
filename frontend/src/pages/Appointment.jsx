@@ -1,12 +1,15 @@
 import { useContext, useEffect, useState } from 'react'
-import { useParams } from 'react-router-dom'
+import { useNavigate, useParams } from 'react-router-dom'
 import { AppContent } from '../context/AppContent'
 import assets from '../assets/assets_frontend/assets'
 import RelatedDoctor from '../components/RelatedDoctor'
+import { toast } from 'react-toastify'
+import axios from 'axios'
 
 const Appointment = () => {
     const { docId } = useParams()
-    const { doctorsData, currencySymbol } = useContext(AppContent)
+    const { doctorsData, currencySymbol, backendURL, token, getDoctorsData } = useContext(AppContent)
+    const navigate = useNavigate()
 
     const daysOfWeek = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT']
 
@@ -21,7 +24,7 @@ const Appointment = () => {
 
         const doctor = doctorsData.find(doc => doc._id.toString() === docId)
         setDocInfo(doctor)
-        console.log('Doctor found:', doctor)
+        // console.log('Doctor found:', doctor)
     }, [doctorsData, docId])
 
     /* ------------------ GENERATE SLOTS ------------------ */
@@ -48,13 +51,28 @@ const Appointment = () => {
             let timeSlots = []
 
             while (currentDate < endTime) {
-                timeSlots.push({
-                    datetime: new Date(currentDate),
-                    time: currentDate.toLocaleTimeString([], {
-                        hour: '2-digit',
-                        minute: '2-digit',
-                    }),
+
+                const formattedTime = currentDate.toLocaleTimeString([], {
+                    hour: '2-digit',
+                    minute: '2-digit',
                 })
+
+                let day = currentDate.getDate()
+                let month = currentDate.getMonth() + 1
+                let year = currentDate.getFullYear()
+
+                const slotDate = day + "/" + month + "/" + year
+
+                const isSlotAvailable =
+                    !docInfo?.slots_booked?.[slotDate] ||
+                    !docInfo.slots_booked[slotDate].includes(formattedTime)
+
+                if (isSlotAvailable) {
+                    timeSlots.push({
+                        datetime: new Date(currentDate),
+                        time: formattedTime,
+                    })
+                }
 
                 currentDate.setMinutes(currentDate.getMinutes() + 30)
             }
@@ -65,12 +83,42 @@ const Appointment = () => {
         setDocSlot(slots)
     }
 
+    const bookAppointment = async () => {
+        if (!token) {
+            toast.warn('Login to book appointment')
+            return navigate('/login')
+        }
+
+        try {
+            const date = docSlot[slotIndex][0].datetime
+            let day = date.getDate()
+            let month = date.getMonth() + 1
+            let year = date.getFullYear()
+
+            const slotDate = day + "/" + month + "/" + year
+
+            const { data } = await axios.post(backendURL + '/user/book-appointment', { docId, slotDate, slotTime }, { headers: { token } })
+            if (data.success) {
+                toast.success(data.message)
+                getDoctorsData()
+                navigate('/my-appointment')
+            } else {
+                toast.error(data.message)
+            }
+        } catch (error) {
+            console.log(error)
+            toast.error(error.message)
+        }
+    }
+
     useEffect(() => {
-        if (docInfo) getAvailableSlots()
+        if (docInfo) {
+            getAvailableSlots()
+        }
     }, [docInfo])
 
     useEffect(() => {
-        console.log('Slots:', docSlot)
+        // console.log('Slots:', docSlot)
     }, [docSlot])
 
     if (!docInfo) return null
@@ -167,7 +215,7 @@ const Appointment = () => {
                         ))}
                 </div>
 
-                <button className='bg-primary mx-auto flex text-white text-base font-light px-8 py-3 rounded-full my-6'>
+                <button onClick={bookAppointment} className='bg-primary mx-auto flex text-white text-base font-light px-8 py-3 rounded-full my-6'>
                     Book an appointment
                 </button>
             </div>

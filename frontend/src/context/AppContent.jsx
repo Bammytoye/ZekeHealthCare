@@ -54,7 +54,7 @@ const AppContentProvider = (props) => {
     }, [])
 
     const value = {
-        currencySymbol,
+        currencySymbol, getDoctorsData, 
         doctorsData, token, setToken, backendURL, userData, setUserData, loadUserProfile
     }
 
