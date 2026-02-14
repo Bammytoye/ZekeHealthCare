@@ -5,6 +5,7 @@ import jwt from 'jsonwebtoken'
 import { v2 as cloudinary } from 'cloudinary'
 import doctorModel from '../models/doctorModel.js'
 import appointmentModel from '../models/appointmentModel.js'
+import Flutterwave from 'flutterwave-node-v3'
 
 
 //api to register user
@@ -223,4 +224,81 @@ const cancelAppointment = async (req, res) => {
     }
 }
 
-export { registerUser, loginUser, getProfile, updateUserProfile, bookAppointment, getUserAppointment, cancelAppointment }
+//api to make payment of appointment using flutterwave
+const flw = new Flutterwave(
+    process.env.FLUTWAVE_PUBLIC_KEY,
+    process.env.FLUTWAVE_SECRET_KEY
+)
+
+const paymentAppointment = async (req, res) => {
+    try {
+        const { appointmentId } = req.body
+        const appointmentData = await appointmentModel.findById(appointmentId)
+
+        if (!appointmentData)
+            return res.json({ success: false, message: "Appointment not found" })
+
+        if (appointmentData.cancelled)
+            return res.json({ success: false, message: "Appointment cancelled" })
+
+        //creating options for flutterwave
+        const payload = {
+            tx_ref: appointmentId,
+            amount: appointmentData.amount,
+            currency: process.env.CURRENCY || "NGN",
+            redirect_url: "http://localhost:5173/payment-success",
+            customer: {
+                email: appointmentData.userData.email,
+                phonenumber: appointmentData.userData.phone || "08000000000",
+                name: appointmentData.userData.name
+            },
+            customizations: {
+                title: "Appointment Payment",
+                description: "Payment for doctor appointment"
+            }
+        }
+
+        //creation of order
+        const order = await flw.Payments.create(payload)
+
+        res.json({ success: true, link: order.data.link })
+
+    } catch (error) {
+        console.log(error)
+        res.json({ success: false, message: error.message })
+    }
+}
+
+// VERIFY PAYMENT
+const verifyPayment = async (req, res) => {
+    try {
+        const { transaction_id, appointmentId } = req.body
+
+        const response = await flw.Transaction.verify({
+            id: transaction_id
+        })
+
+        if (
+            response.data.status === "successful" &&
+            response.data.amount
+        ) {
+            await appointmentModel.findByIdAndUpdate(appointmentId, {
+                paid: true
+            })
+
+            return res.json({
+                success: true,
+                message: "Payment verified successfully"
+            })
+        }
+
+        res.json({ success: false, message: "Payment not successful" })
+
+    } catch (error) {
+        console.log(error)
+        res.json({ success: false, message: error.message })
+    }
+}
+
+
+export { registerUser, loginUser, getProfile, updateUserProfile, bookAppointment, getUserAppointment, cancelAppointment, paymentAppointment, verifyPayment }
