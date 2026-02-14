@@ -233,54 +233,70 @@ const flw = new Flutterwave(
 const paymentAppointment = async (req, res) => {
     try {
         const { appointmentId } = req.body
-        const appointmentData = await appointmentModel.findById(appointmentId)
+        const userId = req.userId // From auth middleware
+
+        const appointmentData = await appointmentModel
+            .findById(appointmentId)
+            .populate('userData', 'name email phone')
 
         if (!appointmentData)
             return res.json({ success: false, message: "Appointment not found" })
 
+        // Authorization check
+        if (appointmentData.userData._id.toString() !== userId)
+            return res.json({ success: false, message: "Unauthorized" })
+
         if (appointmentData.cancelled)
             return res.json({ success: false, message: "Appointment cancelled" })
 
-        //creating options for flutterwave
-        const payload = {
+        if (appointmentData.paid)
+            return res.json({ success: false, message: "Already paid" })
+
+        // For inline payment (matches frontend)
+        const order = {
             tx_ref: appointmentId,
             amount: appointmentData.amount,
             currency: process.env.CURRENCY || "NGN",
-            redirect_url: "http://localhost:5173/payment-success",
             customer: {
                 email: appointmentData.userData.email,
-                phonenumber: appointmentData.userData.phone || "08000000000",
+                phone_number: appointmentData.userData.phone || "08000000000",
                 name: appointmentData.userData.name
-            },
-            customizations: {
-                title: "Appointment Payment",
-                description: "Payment for doctor appointment"
             }
         }
 
-        //creation of order
-        const order = await flw.Payments.create(payload)
-
-        res.json({ success: true, link: order.data.link })
+        res.json({ success: true, order })
 
     } catch (error) {
-        console.log(error)
+        console.error("Payment initiation error:", error)
         res.json({ success: false, message: error.message })
     }
 }
 
-// VERIFY PAYMENT
 const verifyPayment = async (req, res) => {
     try {
         const { transaction_id, appointmentId } = req.body
+        const userId = req.userId
 
-        const response = await flw.Transaction.verify({
-            id: transaction_id
-        })
+        const appointmentData = await appointmentModel
+            .findById(appointmentId)
+            .populate('userData')
+
+        if (!appointmentData)
+            return res.json({ success: false, message: "Appointment not found" })
+
+        // Authorization check
+        if (appointmentData.userData._id.toString() !== userId)
+            return res.json({ success: false, message: "Unauthorized" })
+
+        if (appointmentData.paid)
+            return res.json({ success: false, message: "Already paid" })
+
+        const response = await flw.Transaction.verify({ id: transaction_id })
 
         if (
             response.data.status === "successful" &&
-            response.data.amount
+            response.data.amount >= appointmentData.amount &&
+            response.data.tx_ref === appointmentId
         ) {
             await appointmentModel.findByIdAndUpdate(appointmentId, {
                 paid: true
@@ -292,10 +308,10 @@ const verifyPayment = async (req, res) => {
             })
         }
 
-        res.json({ success: false, message: "Payment not successful" })
+        res.json({ success: false, message: "Payment verification failed" })
 
     } catch (error) {
-        console.log(error)
+        console.error("Payment verification error:", error)
         res.json({ success: false, message: error.message })
     }
 }
