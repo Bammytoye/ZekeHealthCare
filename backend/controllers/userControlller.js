@@ -6,6 +6,7 @@ import { v2 as cloudinary } from 'cloudinary'
 import doctorModel from '../models/doctorModel.js'
 import appointmentModel from '../models/appointmentModel.js'
 import Flutterwave from 'flutterwave-node-v3'
+import Paystack from 'paystack';
 
 
 //api to register user
@@ -224,17 +225,14 @@ const cancelAppointment = async (req, res) => {
     }
 }
 
-//api to make payment of appointment using flutterwave
-const flw = new Flutterwave(
-    process.env.FLUTWAVE_PUBLIC_KEY,
-    process.env.FLUTWAVE_SECRET_KEY
-)
+// Backend - Payment Controller
+const paystack = Paystack(process.env.PAYSTACK_SECRET_KEY);
 
+// Initialize Payment
 const paymentAppointment = async (req, res) => {
     try {
         const { appointmentId } = req.body
-        const userId = req.userId // From auth middleware
-
+        
         const appointmentData = await appointmentModel
             .findById(appointmentId)
             .populate('userData', 'name email phone')
@@ -242,76 +240,75 @@ const paymentAppointment = async (req, res) => {
         if (!appointmentData)
             return res.json({ success: false, message: "Appointment not found" })
 
-        // Authorization check
-        if (appointmentData.userData._id.toString() !== userId)
-            return res.json({ success: false, message: "Unauthorized" })
-
         if (appointmentData.cancelled)
             return res.json({ success: false, message: "Appointment cancelled" })
 
         if (appointmentData.paid)
             return res.json({ success: false, message: "Already paid" })
 
-        // For inline payment (matches frontend)
-        const order = {
-            tx_ref: appointmentId,
-            amount: appointmentData.amount,
-            currency: process.env.CURRENCY || "NGN",
-            customer: {
-                email: appointmentData.userData.email,
-                phone_number: appointmentData.userData.phone || "08000000000",
-                name: appointmentData.userData.name
-            }
+        // Initialize Paystack transaction
+        const response = await paystack.transaction.initialize({
+            email: appointmentData.userData.email,
+            amount: appointmentData.amount * 100, // Convert to kobo
+            reference: appointmentId,
+            callback_url: `${process.env.FRONTEND_URL}/payment-success?appointmentId=${appointmentId}`,
+        })
+
+        if (response.status) {
+            res.json({ 
+                success: true, 
+                authorizationUrl: response.data.authorization_url,
+                reference: response.data.reference
+            })
+        } else {
+            res.json({ success: false, message: "Payment initialization failed" })
         }
 
-        res.json({ success: true, order })
-
     } catch (error) {
-        console.error("Payment initiation error:", error)
+        console.error("Payment error:", error)
         res.json({ success: false, message: error.message })
     }
 }
 
+// Verify Payment
 const verifyPayment = async (req, res) => {
     try {
-        const { transaction_id, appointmentId } = req.body
-        const userId = req.userId
+        const { reference, appointmentId } = req.body
 
-        const appointmentData = await appointmentModel
-            .findById(appointmentId)
-            .populate('userData')
-
-        if (!appointmentData)
-            return res.json({ success: false, message: "Appointment not found" })
-
-        // Authorization check
-        if (appointmentData.userData._id.toString() !== userId)
-            return res.json({ success: false, message: "Unauthorized" })
-
-        if (appointmentData.paid)
-            return res.json({ success: false, message: "Already paid" })
-
-        const response = await flw.Transaction.verify({ id: transaction_id })
-
-        if (
-            response.data.status === "successful" &&
-            response.data.amount >= appointmentData.amount &&
-            response.data.tx_ref === appointmentId
-        ) {
-            await appointmentModel.findByIdAndUpdate(appointmentId, {
-                paid: true
-            })
-
-            return res.json({
-                success: true,
-                message: "Payment verified successfully"
-            })
+        if (!reference) {
+            return res.json({ success: false, message: "Payment reference required" })
         }
 
-        res.json({ success: false, message: "Payment verification failed" })
+        // Verify with Paystack
+        const response = await paystack.transaction.verify(reference)
+
+        if (response.data.status === 'success') {
+            const appointmentData = await appointmentModel.findById(appointmentId)
+
+            if (!appointmentData) {
+                return res.json({ success: false, message: "Appointment not found" })
+            }
+
+            // Verify amount (Paystack returns in kobo)
+            const paidAmount = response.data.amount / 100
+            
+            if (paidAmount >= appointmentData.amount) {
+                await appointmentModel.findByIdAndUpdate(appointmentId, {
+                    paid: true,
+                    paymentReference: reference
+                })
+
+                return res.json({
+                    success: true,
+                    message: "Payment verified successfully"
+                })
+            }
+        }
+
+        return res.json({ success: false, message: "Payment verification failed" })
 
     } catch (error) {
-        console.error("Payment verification error:", error)
+        console.error("Verification error:", error)
         res.json({ success: false, message: error.message })
     }
 }

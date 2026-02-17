@@ -1,5 +1,6 @@
 // components/MyAppointments.jsx
-// FIXED VERSION - All bugs resolved
+// PAYSTACK INTEGRATION - COMPLETE CODE
+
 import React, { useContext, useEffect, useState } from 'react'
 import axios from 'axios'
 import { toast } from 'react-toastify'
@@ -8,18 +9,25 @@ import { AppContent } from '../context/AppContent'
 const MyAppointments = () => {
     const { backendURL, token, getDoctorsData } = useContext(AppContent)
     const [appointments, setAppointments] = useState([])
-    const [loading, setLoading] = useState({}) // Track loading state per appointment
+    const [initialLoading, setInitialLoading] = useState(true)
+    const [loadingPay, setLoadingPay] = useState({})
+    const [loadingCancel, setLoadingCancel] = useState({})
 
     const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
 
     const slotDateFormat = (slotDate) => {
         if (!slotDate) return ''
-        const [day, month, year] = slotDate.split('/')
-        return `${day} ${months[Number(month) - 1]} ${year}`
+        try {
+            const [day, month, year] = slotDate.split('/')
+            return `${day} ${months[Number(month) - 1]} ${year}`
+        } catch (error) {
+            return slotDate
+        }
     }
 
     const getUserAppointments = async () => {
         try {
+            setInitialLoading(true)
             const { data } = await axios.get(
                 `${backendURL}/user/get-appointment`,
                 { headers: { token } }
@@ -29,14 +37,20 @@ const MyAppointments = () => {
             }
         } catch (error) {
             console.error('Error fetching appointments:', error)
-            toast.error(error.response?.data?.message || error.message)
+            toast.error(error.response?.data?.message || 'Failed to load appointments')
+        } finally {
+            setInitialLoading(false)
         }
     }
 
     const cancelAppointment = async (appointmentId) => {
+        const confirmed = window.confirm(
+            'Are you sure you want to cancel this appointment?'
+        )
+        if (!confirmed) return
+
         try {
-            // Set loading state for this appointment
-            setLoading(prev => ({ ...prev, [appointmentId]: true }))
+            setLoadingCancel(prev => ({ ...prev, [appointmentId]: true }))
 
             const { data } = await axios.post(
                 `${backendURL}/user/cancel-appointment`,
@@ -45,24 +59,25 @@ const MyAppointments = () => {
             )
             
             if (data.success) {
-                toast.success(data.message)
+                toast.success(data.message || 'Appointment cancelled successfully')
                 getUserAppointments()
                 getDoctorsData()
             } else {
-                toast.error(data.message)
+                toast.error(data.message || 'Failed to cancel appointment')
             }
         } catch (error) {
             console.error('Error cancelling appointment:', error)
-            toast.error(error.response?.data?.message || error.message)
+            toast.error(error.response?.data?.message || 'Failed to cancel appointment')
         } finally {
-            setLoading(prev => ({ ...prev, [appointmentId]: false }))
+            setLoadingCancel(prev => ({ ...prev, [appointmentId]: false }))
         }
     }
 
+    // PAYSTACK PAYMENT FUNCTION
     const payOnline = async (appointmentId) => {
         try {
-            // Set loading state
-            setLoading(prev => ({ ...prev, [appointmentId]: true }))
+            console.log('🔄 Starting Paystack payment for:', appointmentId)
+            setLoadingPay(prev => ({ ...prev, [appointmentId]: true }))
 
             const { data } = await axios.post(
                 `${backendURL}/user/payment-appointment`,
@@ -70,69 +85,21 @@ const MyAppointments = () => {
                 { headers: { token } }
             )
 
+            console.log('📦 Backend response:', data)
+
             if (!data.success) {
-                setLoading(prev => ({ ...prev, [appointmentId]: false }))
-                return toast.error(data.message)
+                setLoadingPay(prev => ({ ...prev, [appointmentId]: false }))
+                return toast.error(data.message || 'Failed to initiate payment')
             }
 
-            const order = data.order
+            // Redirect to Paystack payment page
+            console.log('✅ Redirecting to Paystack payment page...')
+            window.location.href = data.authorizationUrl
 
-            // Check if Flutterwave SDK is loaded
-            if (!window.FlutterwaveCheckout) {
-                setLoading(prev => ({ ...prev, [appointmentId]: false }))
-                return toast.error('Payment system not loaded. Please refresh the page.')
-            }
-
-            window.FlutterwaveCheckout({
-                public_key: import.meta.env.VITE_FLUTTERWAVE_PUBLIC_KEY,
-                tx_ref: order.tx_ref,
-                amount: order.amount,
-                currency: order.currency,
-                customer: order.customer,
-                payment_options: "card,ussd,qr",
-
-                callback: async (response) => {
-                    try {
-                        // Verify payment with backend
-                        const verifyRes = await axios.post(
-                            `${backendURL}/user/verify-payment`,
-                            {
-                                transaction_id: response.transaction_id,
-                                appointmentId
-                            },
-                            { headers: { token } }
-                        )
-
-                        if (verifyRes.data.success) {
-                            toast.success(verifyRes.data.message || "Payment successful!")
-                            getUserAppointments()
-                            getDoctorsData()
-                        } else {
-                            toast.error(verifyRes.data.message || "Payment verification failed")
-                        }
-                    } catch (error) {
-                        console.error("Payment verification error:", error)
-                        toast.error(error.response?.data?.message || "Payment verification failed. Please contact support.")
-                    } finally {
-                        setLoading(prev => ({ ...prev, [appointmentId]: false }))
-                    }
-                },
-
-                onclose: () => {
-                    console.log("Payment modal closed")
-                    setLoading(prev => ({ ...prev, [appointmentId]: false }))
-                },
-
-                customizations: {
-                    title: "Appointment Payment",
-                    description: "Payment for doctor appointment",
-                    logo: "https://your-logo-url.com/logo.png" // Add your logo URL
-                },
-            })
         } catch (error) {
-            console.error('Error initiating payment:', error)
-            toast.error(error.response?.data?.message || error.message)
-            setLoading(prev => ({ ...prev, [appointmentId]: false }))
+            console.error('💥 Error initiating payment:', error)
+            toast.error(error.response?.data?.message || 'Failed to initiate payment')
+            setLoadingPay(prev => ({ ...prev, [appointmentId]: false }))
         }
     }
 
@@ -148,121 +115,166 @@ const MyAppointments = () => {
                 My Appointments
             </h2>
 
-            {appointments.length === 0 && (
-                <div className="text-center py-8 text-gray-500">
-                    <p className="text-lg">No appointments booked yet.</p>
+            {initialLoading && (
+                <div className="text-center py-12">
+                    <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+                    <p className="mt-4 text-gray-600">Loading appointments...</p>
+                </div>
+            )}
+
+            {!initialLoading && appointments.length === 0 && (
+                <div className="text-center py-12 text-gray-500">
+                    <svg 
+                        className="mx-auto h-16 w-16 text-gray-400 mb-4" 
+                        fill="none" 
+                        viewBox="0 0 24 24" 
+                        stroke="currentColor"
+                    >
+                        <path 
+                            strokeLinecap="round" 
+                            strokeLinejoin="round" 
+                            strokeWidth={1.5} 
+                            d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" 
+                        />
+                    </svg>
+                    <p className="text-lg font-medium text-gray-900">No appointments yet</p>
                     <p className="text-sm mt-2">Book your first appointment to get started!</p>
                 </div>
             )}
 
-            <div className="space-y-4">
-                {appointments.map((item) => (
-                    <div
-                        key={item._id}
-                        className="grid md:grid-cols-[2fr_1fr] gap-6 py-4 border-b hover:bg-gray-50 transition-colors rounded-lg px-4"
-                    >
-                        <div className="flex gap-4">
-                            <img
-                                className="w-28 h-28 object-cover rounded bg-indigo-50"
-                                src={item.docData?.image}
-                                alt={item.docData?.name || 'Doctor'}
-                                onError={(e) => {
-                                    e.target.src = 'https://via.placeholder.com/112?text=Doctor'
-                                }}
-                            />
+            {!initialLoading && appointments.length > 0 && (
+                <div className="space-y-4">
+                    {appointments.map((item) => (
+                        <div
+                            key={item._id}
+                            className="grid md:grid-cols-[2fr_1fr] gap-6 py-4 border rounded-lg hover:shadow-md transition-all px-4 bg-white"
+                        >
+                            <div className="flex gap-4">
+                                <img
+                                    className="w-28 h-28 object-cover rounded-lg bg-indigo-50 flex-shrink-0"
+                                    src={item.docData?.image}
+                                    alt={item.docData?.name || 'Doctor'}
+                                    onError={(e) => {
+                                        e.target.src = 'https://via.placeholder.com/112?text=Doctor'
+                                    }}
+                                />
 
-                            <div className="flex-1">
-                                <p className="font-semibold text-lg">
-                                    {item.docData?.name || 'Doctor Name'}
-                                </p>
-                                <p className="text-gray-600">
-                                    {item.docData?.speciality || 'Speciality'}
-                                </p>
-
-                                <p className="mt-2 text-sm text-gray-600">
-                                    {item.docData?.address?.line1}
-                                </p>
-                                <p className="text-sm text-gray-600">
-                                    {item.docData?.address?.line2}
-                                </p>
-
-                                <p className="mt-2 text-sm">
-                                    <span className="font-medium text-gray-700">
-                                        Date & Time:
-                                    </span>{" "}
-                                    <span className="text-gray-900">
-                                        {slotDateFormat(item.slotDate)} | {item.slotTime}
-                                    </span>
-                                </p>
-
-                                {item.amount && (
-                                    <p className="mt-1 text-sm">
-                                        <span className="font-medium text-gray-700">
-                                            Amount:
-                                        </span>{" "}
-                                        <span className="text-gray-900">
-                                            ₦{item.amount.toLocaleString()}
-                                        </span>
+                                <div className="flex-1 min-w-0">
+                                    <p className="font-semibold text-lg text-gray-900">
+                                        {item.docData?.name || 'Doctor Name'}
                                     </p>
+                                    <p className="text-sm text-indigo-600 font-medium">
+                                        {item.docData?.speciality || 'Speciality'}
+                                    </p>
+
+                                    {(item.docData?.address?.line1 || item.docData?.address?.line2) && (
+                                        <div className="mt-2">
+                                            {item.docData?.address?.line1 && (
+                                                <p className="text-sm text-gray-600">
+                                                    {item.docData.address.line1}
+                                                </p>
+                                            )}
+                                            {item.docData?.address?.line2 && (
+                                                <p className="text-sm text-gray-600">
+                                                    {item.docData.address.line2}
+                                                </p>
+                                            )}
+                                        </div>
+                                    )}
+
+                                    <div className="mt-3 space-y-1">
+                                        <p className="text-sm">
+                                            <span className="font-medium text-gray-700">
+                                                📅 Date & Time:
+                                            </span>{" "}
+                                            <span className="text-gray-900">
+                                                {slotDateFormat(item.slotDate)} | {item.slotTime}
+                                            </span>
+                                        </p>
+
+                                        {item.amount && (
+                                            <p className="text-sm">
+                                                <span className="font-medium text-gray-700">
+                                                    💰 Amount:
+                                                </span>{" "}
+                                                <span className="text-gray-900 font-semibold">
+                                                    ₦{item.amount.toLocaleString()}
+                                                </span>
+                                            </p>
+                                        )}
+
+                                        <p className="text-xs text-gray-500 font-mono">
+                                            Ref: {item._id.slice(-8).toUpperCase()}
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="flex flex-col gap-3 justify-center">
+                                {!item.cancelled && !item.isCompleted && !item.paid && (
+                                    <button
+                                        onClick={() => payOnline(item._id)}
+                                        disabled={loadingPay[item._id] || loadingCancel[item._id]}
+                                        className={`py-2.5 px-4 border-2 rounded-lg font-medium transition-all ${
+                                            loadingPay[item._id] || loadingCancel[item._id]
+                                                ? 'bg-gray-100 text-gray-400 cursor-not-allowed border-gray-300'
+                                                : 'hover:bg-primary hover:text-white border-primary text-primary hover:shadow-md'
+                                        }`}
+                                    >
+                                        {loadingPay[item._id] ? (
+                                            <span className="flex items-center justify-center gap-2">
+                                                <span className="inline-block animate-spin rounded-full h-4 w-4 border-b-2 border-gray-400"></span>
+                                                Processing...
+                                            </span>
+                                        ) : (
+                                            '💳 Pay with Paystack'
+                                        )}
+                                    </button>
+                                )}
+
+                                {!item.cancelled && !item.isCompleted && (
+                                    <button
+                                        onClick={() => cancelAppointment(item._id)}
+                                        disabled={loadingPay[item._id] || loadingCancel[item._id]}
+                                        className={`py-2.5 px-4 border-2 rounded-lg font-medium transition-all ${
+                                            loadingPay[item._id] || loadingCancel[item._id]
+                                                ? 'bg-gray-100 text-gray-400 cursor-not-allowed border-gray-300'
+                                                : 'hover:bg-red-600 hover:text-white border-red-600 text-red-600 hover:shadow-md'
+                                        }`}
+                                    >
+                                        {loadingCancel[item._id] ? (
+                                            <span className="flex items-center justify-center gap-2">
+                                                <span className="inline-block animate-spin rounded-full h-4 w-4 border-b-2 border-gray-400"></span>
+                                                Cancelling...
+                                            </span>
+                                        ) : (
+                                            '❌ Cancel Appointment'
+                                        )}
+                                    </button>
+                                )}
+
+                                {item.paid && !item.isCompleted && !item.cancelled && (
+                                    <div className="py-2.5 px-4 text-green-700 text-sm text-center font-semibold bg-green-100 rounded-lg border-2 border-green-300">
+                                        ✓ Payment Complete
+                                    </div>
+                                )}
+
+                                {item.cancelled && (
+                                    <div className="py-2.5 px-4 text-red-700 text-sm text-center font-semibold bg-red-100 rounded-lg border-2 border-red-300">
+                                        ✗ Appointment Cancelled
+                                    </div>
+                                )}
+
+                                {item.isCompleted && (
+                                    <div className="py-2.5 px-4 text-blue-700 text-sm text-center font-semibold bg-blue-100 rounded-lg border-2 border-blue-300">
+                                        ✓ Appointment Completed
+                                    </div>
                                 )}
                             </div>
                         </div>
-
-                        <div className="flex flex-col gap-3 justify-center">
-                            {/* Show Pay Online button only if not cancelled, not completed, and not paid */}
-                            {!item.cancelled && !item.isCompleted && !item.paid && (
-                                <button
-                                    onClick={() => payOnline(item._id)}
-                                    disabled={loading[item._id]}
-                                    className={`py-2 px-4 border rounded font-medium transition ${
-                                        loading[item._id]
-                                            ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                                            : 'hover:bg-primary hover:text-white border-primary text-primary'
-                                    }`}
-                                >
-                                    {loading[item._id] ? 'Processing...' : 'Pay Online'}
-                                </button>
-                            )}
-
-                            {/* Show Cancel button only if not cancelled and not completed */}
-                            {!item.cancelled && !item.isCompleted && (
-                                <button
-                                    onClick={() => cancelAppointment(item._id)}
-                                    disabled={loading[item._id]}
-                                    className={`py-2 px-4 border rounded font-medium transition ${
-                                        loading[item._id]
-                                            ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                                            : 'hover:bg-red-600 hover:text-white border-red-600 text-red-600'
-                                    }`}
-                                >
-                                    {loading[item._id] ? 'Cancelling...' : 'Cancel Appointment'}
-                                </button>
-                            )}
-
-                            {/* Show payment status */}
-                            {item.paid && !item.isCompleted && !item.cancelled && (
-                                <span className="py-2 px-4 text-green-600 text-sm text-center font-medium bg-green-50 rounded">
-                                    ✓ Payment Complete
-                                </span>
-                            )}
-
-                            {/* Show cancelled status */}
-                            {item.cancelled && (
-                                <span className="py-2 px-4 text-red-500 text-sm text-center font-medium bg-red-50 rounded">
-                                    ✗ Appointment Cancelled
-                                </span>
-                            )}
-
-                            {/* Show completed status */}
-                            {item.isCompleted && (
-                                <span className="py-2 px-4 text-blue-600 text-sm text-center font-medium bg-blue-50 rounded">
-                                    ✓ Appointment Completed
-                                </span>
-                            )}
-                        </div>
-                    </div>
-                ))}
-            </div>
+                    ))}
+                </div>
+            )}
         </div>
     )
 }

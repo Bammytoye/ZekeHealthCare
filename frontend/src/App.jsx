@@ -19,6 +19,7 @@ import {
 //components
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
+import PaymentSuccess from './pages/PaymentSuccess';
 
 const App = () => {
   return (
@@ -35,6 +36,7 @@ const App = () => {
         <Route path='/my-appointment' element={<MyAppointment />} />
         <Route path='/appointment/:docId' element={<Appointment />} />
         <Route path='/login' element={<Login />} />
+        <Route path="/payment-success" element={<PaymentSuccess />} />
       </Routes>
       <Footer />
     </div>
