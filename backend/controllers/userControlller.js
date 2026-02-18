@@ -232,10 +232,9 @@ const paystack = Paystack(process.env.PAYSTACK_SECRET_KEY);
 const paymentAppointment = async (req, res) => {
     try {
         const { appointmentId } = req.body
-        
-        const appointmentData = await appointmentModel
-            .findById(appointmentId)
-            .populate('userData', 'name email phone')
+
+        const appointmentData = await appointmentModel.findById(appointmentId)
+        const userEmail = appointmentData.userData?.email
 
         if (!appointmentData)
             return res.json({ success: false, message: "Appointment not found" })
@@ -243,20 +242,20 @@ const paymentAppointment = async (req, res) => {
         if (appointmentData.cancelled)
             return res.json({ success: false, message: "Appointment cancelled" })
 
-        if (appointmentData.paid)
+        if (appointmentData.payment)
             return res.json({ success: false, message: "Already paid" })
 
         // Initialize Paystack transaction
         const response = await paystack.transaction.initialize({
-            email: appointmentData.userData.email,
-            amount: appointmentData.amount * 100, // Convert to kobo
+            email: userEmail,
+            amount: appointmentData.amount * 100,
             reference: appointmentId,
-            callback_url: `${process.env.FRONTEND_URL}/payment-success?appointmentId=${appointmentId}`,
+            callback_url: `${process.env.FRONTEND_URL}/payment-success?appointmentId=${appointmentId}&reference=${appointmentId}`,
         })
 
         if (response.status) {
-            res.json({ 
-                success: true, 
+            res.json({
+                success: true,
                 authorizationUrl: response.data.authorization_url,
                 reference: response.data.reference
             })
@@ -291,10 +290,10 @@ const verifyPayment = async (req, res) => {
 
             // Verify amount (Paystack returns in kobo)
             const paidAmount = response.data.amount / 100
-            
+
             if (paidAmount >= appointmentData.amount) {
                 await appointmentModel.findByIdAndUpdate(appointmentId, {
-                    paid: true,
+                    payment: true,
                     paymentReference: reference
                 })
 

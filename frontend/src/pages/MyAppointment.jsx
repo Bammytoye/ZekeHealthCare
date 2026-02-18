@@ -1,6 +1,3 @@
-// components/MyAppointments.jsx
-// PAYSTACK INTEGRATION - COMPLETE CODE
-
 import React, { useContext, useEffect, useState } from 'react'
 import axios from 'axios'
 import { toast } from 'react-toastify'
@@ -12,6 +9,8 @@ const MyAppointments = () => {
     const [initialLoading, setInitialLoading] = useState(true)
     const [loadingPay, setLoadingPay] = useState({})
     const [loadingCancel, setLoadingCancel] = useState({})
+    const [showModal, setShowModal] = useState(false)
+    const [selectedAppointment, setSelectedAppointment] = useState(null)
 
     const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
 
@@ -44,10 +43,6 @@ const MyAppointments = () => {
     }
 
     const cancelAppointment = async (appointmentId) => {
-        const confirmed = window.confirm(
-            'Are you sure you want to cancel this appointment?'
-        )
-        if (!confirmed) return
 
         try {
             setLoadingCancel(prev => ({ ...prev, [appointmentId]: true }))
@@ -57,7 +52,7 @@ const MyAppointments = () => {
                 { appointmentId },
                 { headers: { token } }
             )
-            
+
             if (data.success) {
                 toast.success(data.message || 'Appointment cancelled successfully')
                 getUserAppointments()
@@ -124,17 +119,17 @@ const MyAppointments = () => {
 
             {!initialLoading && appointments.length === 0 && (
                 <div className="text-center py-12 text-gray-500">
-                    <svg 
-                        className="mx-auto h-16 w-16 text-gray-400 mb-4" 
-                        fill="none" 
-                        viewBox="0 0 24 24" 
+                    <svg
+                        className="mx-auto h-16 w-16 text-gray-400 mb-4"
+                        fill="none"
+                        viewBox="0 0 24 24"
                         stroke="currentColor"
                     >
-                        <path 
-                            strokeLinecap="round" 
-                            strokeLinejoin="round" 
-                            strokeWidth={1.5} 
-                            d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" 
+                        <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={1.5}
+                            d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
                         />
                     </svg>
                     <p className="text-lg font-medium text-gray-900">No appointments yet</p>
@@ -211,15 +206,14 @@ const MyAppointments = () => {
                             </div>
 
                             <div className="flex flex-col gap-3 justify-center">
-                                {!item.cancelled && !item.isCompleted && !item.paid && (
+                                {!item.cancelled && !item.isCompleted && !item.payment && (
                                     <button
                                         onClick={() => payOnline(item._id)}
                                         disabled={loadingPay[item._id] || loadingCancel[item._id]}
-                                        className={`py-2.5 px-4 border-2 rounded-lg font-medium transition-all ${
-                                            loadingPay[item._id] || loadingCancel[item._id]
-                                                ? 'bg-gray-100 text-gray-400 cursor-not-allowed border-gray-300'
-                                                : 'hover:bg-primary hover:text-white border-primary text-primary hover:shadow-md'
-                                        }`}
+                                        className={`py-2.5 px-4 border-2 rounded-lg font-medium transition-all ${loadingPay[item._id] || loadingCancel[item._id]
+                                            ? 'bg-gray-100 text-gray-400 cursor-not-allowed border-gray-300'
+                                            : 'hover:bg-primary hover:text-white border-primary text-primary hover:shadow-md'
+                                            }`}
                                     >
                                         {loadingPay[item._id] ? (
                                             <span className="flex items-center justify-center gap-2">
@@ -234,13 +228,16 @@ const MyAppointments = () => {
 
                                 {!item.cancelled && !item.isCompleted && (
                                     <button
-                                        onClick={() => cancelAppointment(item._id)}
+                                        onClick={() => {
+                                            setSelectedAppointment(item._id)
+                                            setShowModal(true)
+                                        }}
+
                                         disabled={loadingPay[item._id] || loadingCancel[item._id]}
-                                        className={`py-2.5 px-4 border-2 rounded-lg font-medium transition-all ${
-                                            loadingPay[item._id] || loadingCancel[item._id]
-                                                ? 'bg-gray-100 text-gray-400 cursor-not-allowed border-gray-300'
-                                                : 'hover:bg-red-600 hover:text-white border-red-600 text-red-600 hover:shadow-md'
-                                        }`}
+                                        className={`py-2.5 px-4 border-2 rounded-lg font-medium transition-all ${loadingPay[item._id] || loadingCancel[item._id]
+                                            ? 'bg-gray-100 text-gray-400 cursor-not-allowed border-gray-300'
+                                            : 'hover:bg-red-600 hover:text-white border-red-600 text-red-600 hover:shadow-md'
+                                            }`}
                                     >
                                         {loadingCancel[item._id] ? (
                                             <span className="flex items-center justify-center gap-2">
@@ -253,7 +250,7 @@ const MyAppointments = () => {
                                     </button>
                                 )}
 
-                                {item.paid && !item.isCompleted && !item.cancelled && (
+                                {item.payment && !item.isCompleted && !item.cancelled && (
                                     <div className="py-2.5 px-4 text-green-700 text-sm text-center font-semibold bg-green-100 rounded-lg border-2 border-green-300">
                                         ✓ Payment Complete
                                     </div>
@@ -275,6 +272,46 @@ const MyAppointments = () => {
                     ))}
                 </div>
             )}
+
+            {showModal && (
+                <div className="fixed inset-0 flex items-center justify-center bg-black/50 z-50">
+                    <div className="bg-white w-full max-w-md rounded-xl shadow-xl p-6">
+
+                        <h3 className="text-xl font-semibold">
+                            Cancel Appointment
+                        </h3>
+
+                        <p className="mt-3 text-gray-600">
+                            Are you sure you want to cancel this appointment?
+                        </p>
+
+                        <div className="flex justify-end gap-3 mt-6">
+
+                            <button
+                                onClick={() => {
+                                    setShowModal(false)
+                                    setSelectedAppointment(null)
+                                }}
+                                className="px-4 py-2 border rounded-lg"
+                            >
+                                No
+                            </button>
+
+                            <button
+                                onClick={() => {
+                                    cancelAppointment(selectedAppointment)
+                                    setShowModal(false)
+                                }}
+                                className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
+                            >
+                                Yes, Cancel
+                            </button>
+
+                        </div>
+                    </div>
+                </div>
+            )}
+
         </div>
     )
 }
