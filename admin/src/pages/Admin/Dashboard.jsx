@@ -1,9 +1,11 @@
 import React, { useContext, useEffect, useState } from 'react'
 import { AdminContext } from '../../context/AdminContext'
 import { assets } from '../../assets/assets_admin/assets'
+import { AppContext } from '../../context/AppContext'
 
 const Dashboard = () => {
     const { aToken, getDashboard, dashboard, cancelAppointments } = useContext(AdminContext)
+    const { slotDateFormat } = useContext(AppContext)
     const [loadingCancel, setLoadingCancel] = useState(false)
     const [modalVisible, setModalVisible] = useState(false)
     const [selectedAppointment, setSelectedAppointment] = useState(null)
@@ -111,7 +113,7 @@ const Dashboard = () => {
                                         {item.docData?.name}
                                     </p>
                                     <p className="text-sm text-gray-500">
-                                        {item.slotDate} | {item.slotTime}
+                                        {slotDateFormat(item.slotDate)} | {item.slotTime}
                                     </p>
                                 </div>
                             </div>
