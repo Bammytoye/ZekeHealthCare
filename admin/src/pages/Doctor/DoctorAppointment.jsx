@@ -5,7 +5,7 @@ import { AppContext } from '../../context/AppContext'
 import { assets } from '../../assets/assets_admin/assets'
 
 const DoctorAppointment = () => {
-    const { dToken, appointments, getAppointments } = useContext(DoctorContext)
+    const { dToken, appointments, getAppointments, completeAppointment, cancelAppointment } = useContext(DoctorContext)
     const { calculateAge, slotDateFormat, currency } = useContext(AppContext)
 
     useEffect(() => {
@@ -39,7 +39,7 @@ const DoctorAppointment = () => {
                         No appointments found
                     </div>
                 ) : (
-                    appointments.map((item, index) => (
+                    appointments.reverse().map((item, index) => (
                         <div
                             key={index}
                             className="grid grid-cols-1 items-center md:grid-cols-[0.5fr_2fr_1fr_1fr_2fr_1fr_1fr] gap-4 py-4 px-6 border-b hover:bg-gray-50 transition"
@@ -74,7 +74,7 @@ const DoctorAppointment = () => {
                             </div>
 
                             {/* Age */}
-                            <p className="text-gray-600">
+                            <p className="text-gray-600 max-sm:hidden">
                                 {calculateAge(item.userData.dob)}
                             </p>
 
@@ -90,23 +90,31 @@ const DoctorAppointment = () => {
                             </p>
 
                             {/* Actions */}
-                            <div className="flex items-center gap-3">
-                                <button className="p-2 rounded-full hover:bg-red-100 transition">
-                                    <img
-                                        src={assets.cancel_icon}
-                                        alt=""
-                                        className="w-6"
-                                    />
-                                </button>
+                            {
+                                item.cancelled ?
+                                    <p className='text-red-400 text-xs font-medium' >Cancelled</p>
+                                    : item.isCompleted ?
+                                        <p className='text-green-500 text-xs'>Completed</p> :
+                                        <div className="flex items-center ">
+                                            <button className="p-2 rounded-full hover:bg-red-100 transition cursor-pointer">
+                                                <img
+                                                    onClick={() => cancelAppointment(item._id)}
+                                                    src={assets.cancel_icon}
+                                                    alt=""
+                                                    className="w-6"
+                                                />
+                                            </button>
 
-                                <button className="p-2 rounded-full hover:bg-green-100 transition">
-                                    <img
-                                        src={assets.tick_icon}
-                                        alt=""
-                                        className="w-6"
-                                    />
-                                </button>
-                            </div>
+                                            <button className="p-2 rounded-full hover:bg-green-100 transition cursor-pointer">
+                                                <img
+                                                    onClick={() => completeAppointment(item._id)}
+                                                    src={assets.tick_icon}
+                                                    alt=""
+                                                    className="w-6"
+                                                />
+                                            </button>
+                                        </div>
+                            }
                         </div>
                     ))
                 )}
