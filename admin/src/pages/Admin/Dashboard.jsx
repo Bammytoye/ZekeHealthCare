@@ -119,18 +119,23 @@ const Dashboard = () => {
                             </div>
 
                             {/* Action */}
-                            {item.cancelled ? (
-                                <span className="text-xs px-3 py-1 bg-red-100 text-red-600 rounded-full">
-                                    Cancelled
-                                </span>
-                            ) : (
-                                <img
-                                    onClick={() => handleCancelClick(item._id)}
-                                    src={assets.cancel_icon}
-                                    alt="cancel"
-                                    className="cursor-pointer w-6 hover:scale-110 transition"
-                                />
-                            )}
+                            {
+                                item.cancelled ?
+                                    <p className="text-xs px-3 py-1 bg-red-100 text-red-600 rounded-full">
+                                        Cancelled
+                                    </p>
+
+                                    : item.isCompleted
+                                        ? <p className="text-xs px-3 py-1 bg-green-100 text-green-600 rounded-full">
+                                            Completed
+                                        </p>
+                                        : <img
+                                            onClick={() => handleCancelClick(item._id)}
+                                            src={assets.cancel_icon}
+                                            alt="cancel"
+                                            className="cursor-pointer w-6"
+                                        />
+                            }
                         </div>
                     ))}
                 </div>

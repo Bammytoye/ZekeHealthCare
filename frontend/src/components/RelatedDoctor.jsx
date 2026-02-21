@@ -45,9 +45,9 @@ const RelatedDoctor = ({ docId, speciality }) => {
                         />
 
                         <div className="p-3">
-                            <div className="flex items-center gap-2 text-sm text-green-500 mb-1">
-                                <span className="w-2 h-2 bg-green-500 rounded-full"></span>
-                                <p>Available</p>
+                            <div className={`flex items-center gap-2 text-sm ${item.available ? 'text-green-500' : 'text-red-500'} mb-1 justify-center md:justify-start`}>
+                                <span className={`w-2 h-2 ${item.available ? 'bg-green-500' : 'bg-red-500'} rounded-full`}></span>
+                                <p className=''>{item.available ? 'Available' : 'Not Available'}</p>
                             </div>
 
                             <p className="text-gray-900 font-medium">{item.name}</p>

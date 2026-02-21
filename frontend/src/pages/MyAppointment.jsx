@@ -256,13 +256,13 @@ const MyAppointments = () => {
                                     </div>
                                 )}
 
-                                {item.cancelled && (
+                                {item.cancelled && !item.isCompleted && (
                                     <div className="py-2.5 px-4 text-red-700 text-sm text-center font-semibold bg-red-100 rounded-lg border-2 border-red-300">
                                         ✗ Appointment Cancelled
                                     </div>
                                 )}
 
-                                {item.isCompleted && (
+                                {item.isCompleted && !item.cancelled && (
                                     <div className="py-2.5 px-4 text-blue-700 text-sm text-center font-semibold bg-blue-100 rounded-lg border-2 border-blue-300">
                                         ✓ Appointment Completed
                                     </div>

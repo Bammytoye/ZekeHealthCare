@@ -120,6 +120,10 @@ const Appointments = () => {
                                                 Cancelled
                                             </p>
 
+                                            : item.isCompleted 
+                                            ? <p className="text-xs px-3 py-1 bg-green-100 text-green-600 rounded-full">
+                                                Completed
+                                            </p> 
                                             : <img
                                                 onClick={() => {
                                                     setSelectedId(item._id)
