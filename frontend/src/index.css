@@ -3,22 +3,28 @@
 @tailwind utilities;
 
 .active hr {
-    display: block;
+  display: block;
 }
 
 ::-webkit-scrollbar {
-    display: none;
+  display: none;
 }
 
 @media (max-width: 740px) {
-    .active p{
-        @apply text-white bg-primary
-    }
+  .active p {
+    @apply text-white bg-primary;
+  }
 }
 
 @keyframes scaleIn {
-  from { transform: scale(0.9); opacity: 0; }
-  to { transform: scale(1); opacity: 1; }
+  from {
+    transform: scale(0.9);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
 }
 
 .animate-scaleIn {

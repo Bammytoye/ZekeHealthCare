@@ -146,8 +146,6 @@ const Navbar = () => {
 
                 {/* Drawer Nav Links */}
                 <div className='flex flex-col gap-1 p-4 flex-1 overflow-y-auto'>
-                    <p className='text-xs font-bold text-gray-400 uppercase tracking-widest px-3 mb-1'>Menu</p>
-
                     {[
                         { to: '/', label: 'Home', icon: '🏠' },
                         { to: '/doctors', label: 'All Doctors', icon: '🩺' },
