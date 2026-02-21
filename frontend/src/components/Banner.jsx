@@ -67,7 +67,7 @@ const Banner = () => {
                 </button>
 
                 {/* Trust indicators */}
-                <div className='mt-6 flex items-center gap-4 hidden sm:flex'>
+                <div className='mt-6 items-center gap-4 hidden sm:flex'>
                     <div className='flex -space-x-2'>
                         {['bg-pink-300', 'bg-yellow-300', 'bg-green-300', 'bg-purple-300'].map((color, i) => (
                             <div key={i} className={`w-7 h-7 rounded-full ${color} border-2 border-white`}></div>
