@@ -40,7 +40,11 @@ const Header = () => {
         <div className='relative flex flex-col md:flex-row flex-wrap mt-3 bg-primary rounded-2xl px-6 md:px-10 lg:px-20 overflow-hidden'>
             {/* Left: Text Content */}
             <div className='md:w-1/2 flex flex-col items-start justify-center gap-5 py-4 md:py-[5vw] md:mb-[-30px] relative z-10'>
-
+                {/* Decorative background blobs */}
+                <div className='absolute -top-10 -right-10 w-52 h-52 bg-white opacity-5 rounded-full'></div>
+                <div className='absolute bottom-0 left-10 w-40 h-40 bg-cyan-300 opacity-10 rounded-full blur-2xl'></div>
+                <div className='absolute top-8 left-1/2 w-24 h-24 bg-white opacity-5 rounded-full'></div>
+                
                 {/* Badge */}
                 <span className='flex items-center gap-2 bg-white/15 text-white text-xs font-semibold tracking-widest uppercase px-4 py-1.5 rounded-full backdrop-blur-sm border border-white/20'>
                     <span className='w-1.5 h-1.5 bg-green-400 rounded-full animate-pulse' />
@@ -64,9 +68,9 @@ const Header = () => {
 
                 {/* Animated Stats Row */}
                 <div className='flex items-center gap-5 sm:gap-8'>
-                    <StatItem target={200} suffix='+'  label='Doctors' />
+                    <StatItem target={200} suffix='+' label='Doctors' />
                     <div className='w-px h-8 bg-white/20' />
-                    <StatItem target={50}  suffix='+'  label='Specialities' />
+                    <StatItem target={50} suffix='+' label='Specialities' />
                     <div className='w-px h-8 bg-white/20' />
                     <StatItem target={10000} suffix='+' label='Patients' duration={2200} />
                 </div>
