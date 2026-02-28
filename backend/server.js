@@ -18,15 +18,16 @@ connectDB();
 configureCloudinary();
 
 // middlewares
+const allowedOrigins = [
+    process.env.FRONTEND_URL,
+    process.env.ADMIN_URL
+].filter(Boolean);
+
 app.use(cors({
-    origin: process.env.NODE_ENV === 'production'
-        ? [
-            process.env.ADMIN_URL,
-            process.env.FRONTEND_URL
-        ]
-        : ["http://localhost:5175", "http://localhost:5176"],
+    origin: allowedOrigins,
     credentials: true
 }));
+
 app.use(express.json());
 
 //api endpoint
