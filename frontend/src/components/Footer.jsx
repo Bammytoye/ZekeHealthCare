@@ -25,7 +25,8 @@ const Footer = () => {
                     <div>
                         <img className='mb-5 w-36 brightness-0 invert' src={assets.logo} alt="ZekeTech Logo" />
                         <p className='w-full md:w-3/4 text-blue-100 leading-7 text-sm'>
-                            Connecting patients with trusted doctors for fast, simple, and secure appointment booking. Your health is our priority — always.
+                            Connecting patients with trusted doctors for fast, simple, and secure appointment 
+                            booking. Your health is our priority always.
                         </p>
 
                         {/* Social Icons */}
