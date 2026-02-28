@@ -19,7 +19,7 @@ function App() {
   const { aToken } = useContext(AdminContext);
   const { dToken } = useContext(DoctorContext);
 
-  console.log("Admin Token:", aToken, "Doctor Token:", dToken);
+  // console.log("Admin Token:", aToken, "Doctor Token:", dToken);
 
   if (!aToken && !dToken) {
     return (
