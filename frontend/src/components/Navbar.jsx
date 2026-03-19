@@ -27,12 +27,12 @@ const Navbar = () => {
                 <div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4'>
 
                     {/* Logo */}
-                    <img
-                        onClick={() => navigate('/')}
-                        className='w-32 sm:w-36 cursor-pointer hover:opacity-80 transition-opacity duration-200 flex-shrink-0'
-                        src={assets.logo}
-                        alt="Logo"
-                    />
+                    <p  onClick={() => navigate('/')}
+                        className='w-32 sm:w-36 text-2xl font-bold text-blue-400 cursor-pointer hover:opacity-80 transition-opacity duration-200 flex-shrink-0'
+                        >
+                        ZekeHealth
+                    </p>
+                    
 
                     {/* Desktop Nav Links */}
                     <ul className='hidden md:flex items-center gap-1'>

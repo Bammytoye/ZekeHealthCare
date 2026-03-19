@@ -22,11 +22,12 @@ const NavBar = () => {
 
             {/* Left: Logo + Role Badge */}
             <div className='flex items-center gap-3'>
-                <img
-                    className='w-32 sm:w-40 cursor-pointer'
-                    src={assets.admin_logo}
-                    alt="Logo"
-                />
+                <p  onClick={() => navigate('/')}
+                        className='w-32 sm:w-36 text-2xl font-bold text-blue-400 cursor-pointer hover:opacity-80 transition-opacity duration-200 flex-shrink-0'
+                        >
+                        ZekeHealth
+                    </p>
+                    
                 <div className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold border ${aToken
                         ? 'bg-blue-50 text-blue-600 border-blue-200'
                         : 'bg-cyan-50 text-cyan-600 border-cyan-200'
