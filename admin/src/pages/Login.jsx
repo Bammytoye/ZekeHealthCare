@@ -15,22 +15,6 @@ const Login = () => {
     const { setDToken, dToken } = useContext(DoctorContext)
     const navigate = useNavigate()
 
-    const handleDemoAdmin = () => {
-        const demoToken = "demo-admin-token"
-        localStorage.setItem("aToken", demoToken)
-        setAToken(demoToken)
-        toast.success("Demo Admin Access Granted")
-        navigate('/admin_dashboard')
-    }
-
-    const handleDemoDoctor = () => {
-        const demoToken = "demo-doctor-token"
-        localStorage.setItem("dToken", demoToken)
-        setDToken(demoToken)
-        toast.success("Demo Doctor Access Granted")
-        navigate('/doctor_dashboard')
-    }
-
     useEffect(() => {
         if (aToken) navigate('/admin_dashboard')
         else if (dToken) navigate('/doctor_dashboard')
@@ -72,13 +56,16 @@ const Login = () => {
             onSubmit={handleSubmit}
             className='min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-white to-cyan-50 px-4'
         >
-            
+            {/* Decorative blobs */}
+            <div className='fixed -top-20 -left-20 w-72 h-72 bg-blue-200 opacity-20 rounded-full blur-3xl pointer-events-none'></div>
+            <div className='fixed -bottom-20 -right-20 w-72 h-72 bg-cyan-200 opacity-20 rounded-full blur-3xl pointer-events-none'></div>
+
             <div className='relative w-full max-w-sm sm:max-w-md bg-white rounded-3xl shadow-xl border border-gray-100 overflow-hidden'>
 
                 {/* Top gradient bar */}
                 <div className='h-1.5 bg-gradient-to-r from-blue-500 via-blue-400 to-cyan-400'></div>
 
-                <div className='px-8 sm:px-10 py-5 flex flex-col gap-5'>
+                <div className='px-8 sm:px-10 py-10 flex flex-col gap-5'>
 
                     {/* Role Icon */}
                     <div className='flex justify-center'>
@@ -95,7 +82,7 @@ const Login = () => {
                     </div>
 
                     {/* Title */}
-                    <div className='text-center -mt-5'>
+                    <div className='text-center -mt-1'>
                         <h2 className='text-2xl sm:text-3xl font-bold text-gray-800'>
                             <span className='text-transparent bg-clip-text bg-gradient-to-r from-blue-500 to-cyan-400'>{role}</span> Login
                         </h2>
@@ -109,10 +96,11 @@ const Login = () => {
                                 key={r}
                                 type='button'
                                 onClick={() => setRole(r)}
-                                className={`flex-1 py-2 text-sm font-semibold rounded-xl transition-all duration-300 ${role === r
-                                    ? 'bg-gradient-to-r from-blue-500 to-cyan-400 text-white shadow-md'
-                                    : 'text-gray-400 hover:text-gray-600'
-                                    }`}
+                                className={`flex-1 py-2 text-sm font-semibold rounded-xl transition-all duration-300 ${
+                                    role === r
+                                        ? 'bg-gradient-to-r from-blue-500 to-cyan-400 text-white shadow-md'
+                                        : 'text-gray-400 hover:text-gray-600'
+                                }`}
                             >
                                 {r}
                             </button>
@@ -125,7 +113,7 @@ const Login = () => {
                     {/* Email */}
                     <div className='w-full'>
                         <label className='text-xs font-bold text-gray-500 uppercase tracking-wide'>Email</label>
-                        <div className='relative '>
+                        <div className='relative mt-1.5'>
                             <div className='absolute inset-y-0 left-3 flex items-center pointer-events-none'>
                                 <svg className='w-4 h-4 text-gray-300' fill='none' stroke='currentColor' strokeWidth='2' viewBox='0 0 24 24'>
                                     <path strokeLinecap='round' strokeLinejoin='round' d='M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z' />
@@ -144,7 +132,7 @@ const Login = () => {
                     {/* Password */}
                     <div className='w-full'>
                         <label className='text-xs font-bold text-gray-500 uppercase tracking-wide'>Password</label>
-                        <div className='relative '>
+                        <div className='relative mt-1.5'>
                             <div className='absolute inset-y-0 left-3 flex items-center pointer-events-none'>
                                 <svg className='w-4 h-4 text-gray-300' fill='none' stroke='currentColor' strokeWidth='2' viewBox='0 0 24 24'>
                                     <path strokeLinecap='round' strokeLinejoin='round' d='M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z' />
@@ -178,20 +166,12 @@ const Login = () => {
                     {/* Submit */}
                     <button
                         type='submit'
-                        className='w-full flex items-center justify-center gap-2 bg-gradient-to-r from-blue-500 to-cyan-400 text-white font-semibold py-3 rounded-xl shadow-md shadow-blue-200 hover:scale-105 hover:shadow-lg transition-all duration-300 group '
+                        className='w-full flex items-center justify-center gap-2 bg-gradient-to-r from-blue-500 to-cyan-400 text-white font-semibold py-3 rounded-xl shadow-md shadow-blue-200 hover:scale-105 hover:shadow-lg transition-all duration-300 group mt-1'
                     >
                         Sign In
                         <svg className='w-4 h-4 group-hover:translate-x-1 transition-transform duration-300' fill='none' stroke='currentColor' strokeWidth='2.5' viewBox='0 0 24 24'>
                             <path strokeLinecap='round' strokeLinejoin='round' d='M17 8l4 4m0 0l-4 4m4-4H3' />
                         </svg>
-                    </button>
-
-                    <button
-                        type='button'
-                        onClick={role === 'Admin' ? handleDemoAdmin : handleDemoDoctor}
-                        className='w-full -mt-3 py-3 text-sm font-semibold rounded-xl bg-gray-100 hover:bg-gray-200 text-gray-600 transition-all duration-200'
-                    >
-                        {role === 'Admin' ? 'Demo Admin' : 'Demo Doctor 🩺'}
                     </button>
 
                     {/* Role switcher */}
