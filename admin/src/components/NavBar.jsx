@@ -1,6 +1,5 @@
 import React, { useContext } from 'react'
 import { AdminContext } from '../context/AdminContext'
-import { assets } from '../assets/assets_admin/assets'
 import { useNavigate } from 'react-router-dom'
 import { DoctorContext } from '../context/DoctorContext'
 
@@ -27,7 +26,7 @@ const NavBar = () => {
                         >
                         ZekeHealth
                     </p>
-                    
+
                 <div className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold border ${aToken
                         ? 'bg-blue-50 text-blue-600 border-blue-200'
                         : 'bg-cyan-50 text-cyan-600 border-cyan-200'
