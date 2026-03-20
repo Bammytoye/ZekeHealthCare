@@ -6,8 +6,11 @@ import { assets } from '../../assets/assets_admin/assets'
 import { AppContext } from '../../context/AppContext'
 
 const DoctorDashboard = () => {
-    const { dToken, getDashData, dashData, setDashData, cancelAppointment, completeAppointment } = useContext(DoctorContext)
+    const { dToken, getDashData, dashData, cancelAppointment, completeAppointment } = useContext(DoctorContext)
     const { currency, slotDateFormat } = useContext(AppContext)
+
+    // only doctor demo check
+    const isDemo = dToken === "demo-doctor-token"
 
     useEffect(() => {
         if (dToken) {
@@ -66,7 +69,6 @@ const DoctorDashboard = () => {
                         key={label}
                         className={`relative bg-gradient-to-br ${bg} border ${border} rounded-3xl p-6 shadow-sm hover:shadow-lg hover:${shadow} hover:-translate-y-1 transition-all duration-300 overflow-hidden`}
                     >
-                        {/* Decorative circle */}
                         <div className='absolute -top-4 -right-4 w-20 h-20 rounded-full bg-white opacity-40'></div>
 
                         <div className='flex items-center justify-between relative z-10'>
@@ -85,7 +87,6 @@ const DoctorDashboard = () => {
             {/* Latest Bookings */}
             <div className='bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden'>
 
-                {/* Section Header */}
                 <div className='flex items-center gap-3 px-6 py-4 bg-gradient-to-r from-blue-50 to-cyan-50 border-b border-gray-100'>
                     <div className='w-8 h-8 rounded-xl bg-gradient-to-br from-blue-500 to-cyan-400 flex items-center justify-center shadow'>
                         <img src={assets.list_icon} alt='' className='w-4 brightness-0 invert' />
@@ -94,15 +95,10 @@ const DoctorDashboard = () => {
                 </div>
 
                 <div className='divide-y divide-gray-50'>
+
                     {dashData.latestAppointments?.length === 0 && (
                         <div className='flex flex-col items-center justify-center py-14 text-center px-6'>
-                            <div className='w-14 h-14 rounded-2xl bg-gradient-to-br from-blue-100 to-cyan-100 flex items-center justify-center mb-3'>
-                                <svg className='w-7 h-7 text-blue-400' fill='none' stroke='currentColor' strokeWidth='1.5' viewBox='0 0 24 24'>
-                                    <path strokeLinecap='round' strokeLinejoin='round' d='M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z' />
-                                </svg>
-                            </div>
-                            <p className='font-bold text-gray-600 mb-1'>No recent bookings</p>
-                            <p className='text-xs text-gray-400'>New patient bookings will appear here.</p>
+                            <p className='text-gray-400'>No recent bookings</p>
                         </div>
                     )}
 
@@ -111,7 +107,6 @@ const DoctorDashboard = () => {
                             key={item._id}
                             className='flex items-center justify-between px-6 py-4 hover:bg-blue-50/40 transition-all duration-200'
                         >
-                            {/* Patient Info */}
                             <div className='flex items-center gap-4'>
                                 <img
                                     src={item.userData?.image}
@@ -120,44 +115,42 @@ const DoctorDashboard = () => {
                                 />
                                 <div>
                                     <p className='font-semibold text-gray-800 text-sm'>{item.userData?.name}</p>
-                                    <div className='flex items-center gap-1.5 mt-0.5'>
-                                        <svg className='w-3 h-3 text-blue-400' fill='none' stroke='currentColor' strokeWidth='2' viewBox='0 0 24 24'>
-                                            <path strokeLinecap='round' strokeLinejoin='round' d='M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z' />
-                                        </svg>
-                                        <p className='text-xs text-gray-400'>{slotDateFormat(item.slotDate)} · {item.slotTime}</p>
-                                    </div>
+                                    <p className='text-xs text-gray-400'>
+                                        {slotDateFormat(item.slotDate)} · {item.slotTime}
+                                    </p>
                                 </div>
                             </div>
 
-                            {/* Status / Actions */}
+                            {/* STATUS */}
                             {item.cancelled ? (
-                                <span className='inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-red-500 bg-red-50 border border-red-200 rounded-full'>
-                                    <svg className='w-3 h-3' fill='none' stroke='currentColor' strokeWidth='2.5' viewBox='0 0 24 24'>
-                                        <path strokeLinecap='round' strokeLinejoin='round' d='M6 18L18 6M6 6l12 12' />
-                                    </svg>
-                                    Cancelled
-                                </span>
+                                <span className='text-red-500 text-xs'>Cancelled</span>
                             ) : item.isCompleted ? (
-                                <span className='inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-green-600 bg-green-50 border border-green-200 rounded-full'>
-                                    <svg className='w-3 h-3' fill='none' stroke='currentColor' strokeWidth='2.5' viewBox='0 0 24 24'>
-                                        <path strokeLinecap='round' strokeLinejoin='round' d='M5 13l4 4L19 7' />
-                                    </svg>
-                                    Completed
-                                </span>
+                                <span className='text-green-600 text-xs'>Completed</span>
                             ) : (
                                 <div className='flex items-center gap-2'>
+
+                                    {/* CANCEL BLOCK (DEMO SAFE) */}
                                     <button
-                                        onClick={() => cancelAppointment(item._id)}
+                                        onClick={() => {
+                                            if (isDemo) return alert("🚀 Demo mode: Action disabled")
+                                            cancelAppointment(item._id)
+                                        }}
                                         className='w-8 h-8 flex items-center justify-center rounded-xl bg-red-50 border border-red-100 hover:bg-red-500 hover:border-red-500 group transition-all duration-200'
                                     >
                                         <img src={assets.cancel_icon} alt='Cancel' className='w-4 group-hover:brightness-0 group-hover:invert transition-all duration-200' />
                                     </button>
+
+                                    {/* COMPLETE BLOCK (DEMO SAFE) */}
                                     <button
-                                        onClick={() => completeAppointment(item._id)}
+                                        onClick={() => {
+                                            if (isDemo) return alert("🚀 Demo mode: Action disabled")
+                                            completeAppointment(item._id)
+                                        }}
                                         className='w-8 h-8 flex items-center justify-center rounded-xl bg-green-50 border border-green-100 hover:bg-green-500 hover:border-green-500 group transition-all duration-200'
                                     >
                                         <img src={assets.tick_icon} alt='Complete' className='w-4 group-hover:brightness-0 group-hover:invert transition-all duration-200' />
                                     </button>
+
                                 </div>
                             )}
                         </div>
