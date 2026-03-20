@@ -46,7 +46,7 @@ const Login = () => {
     const isLogin = state === 'Login'
 
     return (
-        <div className='min-h-[85vh] bg-gradient-to-br from-blue-50 via-white to-cyan-50 flex items-center justify-center px-4 py-10'>
+        <div className='min-h-[85vh] bg-gradient-to-br from-blue-50 via-white to-cyan-50 flex items-center justify-center px-4 py-2'>
             <div className='w-full max-w-md'>
 
                 {/* Card */}
@@ -55,11 +55,11 @@ const Login = () => {
                     {/* Top gradient bar */}
                     <div className='h-2 bg-gradient-to-r from-blue-500 via-blue-400 to-cyan-400'></div>
 
-                    <div className='px-8 py-10'>
+                    <div className='px-8 py-3'>
 
                         {/* Header */}
-                        <div className='text-center mb-8'>
-                            <div className='inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-gradient-to-br from-blue-500 to-cyan-400 shadow-lg shadow-blue-200 mb-4'>
+                        <div className='text-center mb-3'>
+                            <div className='inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-gradient-to-br from-blue-500 to-cyan-400 shadow-lg shadow-blue-200 mb-1'>
                                 <svg className='w-7 h-7 text-white' fill='none' stroke='currentColor' strokeWidth='2' viewBox='0 0 24 24'>
                                     {isLogin
                                         ? <path strokeLinecap='round' strokeLinejoin='round' d='M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1' />
@@ -85,7 +85,7 @@ const Login = () => {
                                     className={`flex-1 py-2.5 text-sm font-semibold rounded-xl transition-all duration-300 ${state === tab
                                         ? 'bg-gradient-to-r from-blue-500 to-cyan-400 text-white shadow-md'
                                         : 'text-gray-400 hover:text-gray-600'
-                                    }`}
+                                        }`}
                                 >
                                     {tab}
                                 </button>
@@ -108,7 +108,7 @@ const Login = () => {
                                         <input
                                             className='w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl text-sm text-gray-700 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-300 focus:border-transparent focus:bg-white transition-all duration-200'
                                             type='text'
-                                            placeholder='John Doe'
+                                            placeholder='Bammy Toye'
                                             onChange={(e) => setName(e.target.value)}
                                             value={name}
                                             required
@@ -129,7 +129,7 @@ const Login = () => {
                                     <input
                                         className='w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl text-sm text-gray-700 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-300 focus:border-transparent focus:bg-white transition-all duration-200'
                                         type='email'
-                                        placeholder='you@example.com'
+                                        placeholder='bamigbalatoyese@gmail.com'
                                         onChange={(e) => setEmail(e.target.value)}
                                         value={email}
                                         required
@@ -189,6 +189,18 @@ const Login = () => {
                                 {isLogin ? 'Sign Up' : 'Login'}
                             </span>
                         </p>
+
+                        <div className='text-center mt-3'>
+                            <p className='text-sm text-gray-500'>
+                                Just browsing?{' '}
+                                <span
+                                    onClick={() => navigate('/')}
+                                    className='text-blue-500 font-semibold cursor-pointer hover:underline'
+                                >
+                                    Click here to explore our page
+                                </span>
+                            </p>
+                        </div>
                     </div>
                 </div>
 

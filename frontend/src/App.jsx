@@ -1,8 +1,7 @@
 import React from 'react'
-import { Route, Routes } from 'react-router-dom'
+import { Route, Routes, useLocation } from 'react-router-dom'
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css'
-
 
 //pages
 import {
@@ -22,13 +21,25 @@ import Footer from './components/Footer';
 import PaymentSuccess from './pages/PaymentSuccess';
 
 const App = () => {
+
+  const location = useLocation()
+
+  // routes where navbar/footer should NOT show
+  const hideLayout =
+    location.pathname === '/login' ||
+    location.pathname === '/register'
+
   return (
     <div className='mx-4 sm:mx-[10%]'>
+
       <ToastContainer position="top-right" autoClose={3000} />
-      <Navbar />
+
+      {/* NAVBAR (conditional) */}
+      {!hideLayout && <Navbar />}
+
       <Routes>
         <Route path='/' element={<Home />} />
-        <Route path='/about' element={< About />} />
+        <Route path='/about' element={<About />} />
         <Route path='/contact' element={<Contact />} />
         <Route path='/doctors' element={<Doctors />} />
         <Route path='/doctors/:speciality' element={<Doctors />} />
@@ -38,7 +49,10 @@ const App = () => {
         <Route path='/login' element={<Login />} />
         <Route path="/payment-success" element={<PaymentSuccess />} />
       </Routes>
-      <Footer />
+
+      {/* FOOTER (conditional) */}
+      {!hideLayout && <Footer />}
+
     </div>
   )
 }
